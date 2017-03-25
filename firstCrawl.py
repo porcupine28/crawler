@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 
+finalResult = r'D:\code\python\crawler\crawlResult.txt'
+
 def trade_spider(max_pages):
     page = 2
     while page <= max_pages:
@@ -8,7 +10,8 @@ def trade_spider(max_pages):
             page = ''
         else:
             page = str(page)
-        url = 'http://www.kijiji.ca/b-autos-camions/quebec/page-'+ page + '/c174l9001'
+
+        url = r'http://www.kijiji.ca/b-autos-camions/laval-rive-nord/2007__/page-'+ page + r'/c174l1700278a68r500.0?ad=offering&price=2000__6000&address=montreal&ll=45.501689,-73.567256&kilometres=20000__60000&a-vendre-par=ownr'
         source_code = requests.get(url)
         plain_text = source_code.text
         soup = BeautifulSoup(plain_text,"lxml")
@@ -27,20 +30,25 @@ def get_single_item_data(item_url):
     source_code = requests.get(item_url)
     plain_text = source_code.text
     soup = BeautifulSoup(plain_text,"lxml")
-    print '#################################################'
+    fileResult.write('#################################################'+ r'\n')
     for title in soup.findAll('span',{'itemprop':'name'}):
-        print title.string
+        fileResult.write(title.string + r'\n')
 
     table = soup.find('table',{'class':'ad-attributes'})
-    rows = list()
+    #plain_text_table = table.text
     for row in table.findAll("tr"):
-        showth = table.find('th')
-        showtd = table.find('td')
-        print showth
-        print showtd
+        showth = row.find('th')
+        showtd = row.find('td')
+        if(showth is not None and showtd is not None):
+            fileResult.write(showth.text + ':' + showtd.text + r'\n')
 
     for item_name in soup.findAll('div',{'id':'dv_brochure_template_comments'}):
-        print item_name.string
-    print '#################################################'
+        if(item_name is not None):
+            fileResult.write(item_name.text)
+            fileResult.write('#################################################' + r'\n')
 
-trade_spider(5)
+
+
+fileResult = open(finalResult, 'w',encoding='utf-8')
+trade_spider(3)
+fileResult.close()
